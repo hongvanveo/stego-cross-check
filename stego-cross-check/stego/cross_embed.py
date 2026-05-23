@@ -134,18 +134,23 @@ def main():
     parser.add_argument("input")
     parser.add_argument("output")
     parser.add_argument("--message", default="cross check demo")
+    parser.add_argument("--message-file")
     parser.add_argument("--key", default=13579, type=int)
     args = parser.parse_args()
 
     rate, samples = read_wav(args.input)
-    message_bytes = args.message.encode("utf-8")
+    if args.message_file:
+        with open(args.message_file, "rb") as handle:
+            message_bytes = handle.read().strip()
+    else:
+        message_bytes = args.message.encode("utf-8")
     lsb_marked = embed_lsb(samples, message_bytes)
     final_samples = embed_dwt(lsb_marked, message_bytes, args.key)
     write_wav(args.output, rate, final_samples)
 
     mark("PASS_MARKED_CREATED")
     print(f"marked={args.output}")
-    print(f"message={args.message}")
+    print(f"message={message_bytes.decode('utf-8', errors='replace')}")
 
 
 if __name__ == "__main__":

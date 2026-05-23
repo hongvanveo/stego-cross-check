@@ -149,14 +149,24 @@ def mark_progress(path, overall_status):
 def main():
     parser = argparse.ArgumentParser(description="Verify hybrid LSB + DWT cross-check markers.")
     parser.add_argument("input")
+    parser.add_argument("--sign-file")
     parser.add_argument("--key", default=13579, type=int)
     args = parser.parse_args()
 
     samples = read_wav(args.input)
     lsb_found, message_bytes, integrity_ok = extract_lsb_message(samples)
+    expected_message = None
+    if args.sign_file:
+        with open(args.sign_file, "rb") as handle:
+            expected_message = handle.read().strip()
+    if expected_message is not None:
+        integrity_ok = bool(
+            lsb_found and integrity_ok and message_bytes is not None and message_bytes == expected_message
+        )
 
-    if lsb_found and integrity_ok and message_bytes is not None:
-        score = dwt_score(samples, message_bytes, args.key)
+    dwt_message = expected_message if expected_message is not None else message_bytes
+    if lsb_found and integrity_ok and dwt_message is not None:
+        score = dwt_score(samples, dwt_message, args.key)
         dwt_status = classify_dwt(score)
     else:
         score = 0.0
