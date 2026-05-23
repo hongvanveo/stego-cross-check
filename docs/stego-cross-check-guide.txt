@@ -1,0 +1,52 @@
+Lab: stego-cross-check
+
+Noi dung:
+- Dung he thong self-marking hai lop de xac thuc audio.
+- Lop 1 la LSB marker chua message va hash.
+- Lop 2 la DWT-style watermark chua dau vet cua hash(message).
+- Audio chi hop le khi ca hai lop cung khop.
+- Minh hoa 3 tinh huong: VALID, POSSIBLY MODIFIED, INVALID OR DESTROYED.
+
+Tep can quan tam:
+- ~/stego/cover.wav
+- ~/stego/make_cover.py
+- ~/stego/cross_embed.py
+- ~/stego/cross_verify.py
+- ~/stego/attack.py
+- ~/stego/run_demo.py
+
+Cac lenh goi y:
+
+cd ~/stego
+python3 cross_embed.py cover.wav marked_cross.wav --message "cross check demo" --key 13579
+python3 cross_verify.py marked_cross.wav --key 13579
+python3 attack.py marked_cross.wav light_modified.wav --type crop --level light
+python3 cross_verify.py light_modified.wav --key 13579
+python3 attack.py marked_cross.wav destroyed.wav --type replace --level heavy
+python3 cross_verify.py destroyed.wav --key 13579
+
+Ket qua mong doi:
+
+File: marked_cross.wav
+LSB marker: FOUND
+DWT marker: FOUND
+Message integrity: OK
+Overall status: VALID
+
+File: light_modified.wav
+LSB marker: FOUND
+DWT marker: WEAK
+Message integrity: OK
+Overall status: POSSIBLY MODIFIED
+
+File: destroyed.wav
+LSB marker: NOT FOUND
+DWT marker: NOT FOUND
+Overall status: INVALID OR DESTROYED
+
+Checkwork:
+- cover_available
+- marked_created
+- valid_checked
+- modified_checked
+- invalid_checked
